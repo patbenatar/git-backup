@@ -1,5 +1,6 @@
 require 'git_clone_url'
 require 'optparse'
+require 'philosophie/toolkit/hall_monitor'
 
 options = {}
 OptionParser.new do |opts|
@@ -36,11 +37,11 @@ class Backup
   end
 
   def make_repo_directory
-    system "mkdir -p #{full_path(clone_url)}"
+    fail 'mkdir failed' unless system "mkdir -p #{full_path(clone_url)}"
   end
 
   def mirror_repo(timestamp)
-    system "git clone --mirror #{clone_url} #{full_path(clone_url, timestamp)}"
+    fail 'git clone failed' unless system "git clone --mirror #{clone_url} #{full_path(clone_url, timestamp)}"
   end
 
   def no_change?(last_backup_time, timestamp)
@@ -50,10 +51,14 @@ class Backup
 
   def cleanup_duplicate(timestamp)
     puts "No change, cleaning up duplicate #{timestamp}"
-    system "rm -rf #{full_path(clone_url, timestamp)}"
+    fail 'rm -rf failed' unless system "rm -rf #{full_path(clone_url, timestamp)}"
   end
 end
 
 while repo = gets&.strip
   Backup.new(repo, ROOT_DIR).run(TIME)
 end
+
+Philosophie::Toolkit::HallMonitor::Service
+  .new(ENV.fetch('HALL_MONITOR_ID'), ENV.fetch('HALL_MONITOR_KEY'))
+  .post_status(:healthy)
