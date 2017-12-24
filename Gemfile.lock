@@ -73,6 +73,7 @@ DEPENDENCIES
   git_clone_url (~> 2.0)
   octokit (~> 4.3)
   philosophie-toolkit (~> 0.7.0)!
+  roster!
 
 BUNDLED WITH
    1.16.0
